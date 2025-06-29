@@ -15,10 +15,10 @@
 
 - [Fitur](#-fitur)
 - [Persyaratan Sistem](#-persyaratan-sistem)
-- [File Script](#-file-script)
 - [Quick Start](#-quick-start)
 - [Post-Installation](#-post-installation)
 - [Custom MOTD](#-custom-motd)
+- [Network Connectivity Monitoring](#-network-connectivity-monitoring)
 - [TODO List](#-todo-list)
 - [Troubleshooting](#-troubleshooting)
 - [Script Features](#-script-features)
@@ -38,6 +38,8 @@
 - 🌐 **NAT Network** - Setup jaringan NAT untuk VMs dan containers
 - 📊 **System Monitoring** - Monitoring resource dan status Proxmox VE
 - 🔧 **Troubleshooting** - Panduan troubleshooting lengkap
+- 🌐 **Network Monitoring** - Monitoring konektivitas jaringan otomatis dengan auto-restart
+- 🔍 **Service Status** - Monitoring status layanan Proxmox VE (pve-cluster, pvedaemon, pveproxy, pvestatd)
 
 ## 💻 Persyaratan Sistem
 
@@ -53,7 +55,9 @@
 ### Step 1: Download dan Jalankan Script Part 1
 
 ```bash
-COMING SOON
+wget https://raw.githubusercontent.com/iam-rizz/proxmox-nat-installer/main/install.sh
+chmod +x install.sh
+sudo ./install.sh
 ```
 
 Script ini akan:
@@ -84,7 +88,7 @@ Setelah reboot, script part 2 akan otomatis berjalan via .bashrc dan:
 Jika script part 2 tidak berjalan otomatis, jalankan manual:
 
 ```bash
-COMING SOON
+sudo ./install_proxmox2.sh
 ```
 
 ## 🏗️ Post-Installation
@@ -96,6 +100,7 @@ COMING SOON
 2. **Setup Network Bridge**
    - Di web interface, buat Linux Bridge `vmbr0`
    - Tambah network interface pertama ke bridge
+   - Atau gunakan script: `COMING SOON`
 
 3. **Upload Subscription Key (Opsional)**
    - Jika punya subscription, upload key di web interface
@@ -127,6 +132,12 @@ Script part 2 akan otomatis setup custom MOTD yang menampilkan informasi sistem 
 ║  • VMs: [VM count]                                           ║
 ║  • Containers: [container count]                             ║
 ║                                                              ║
+║  Proxmox VE Services:                                        ║
+║  • pve-cluster: OK/FAILED                                    ║
+║  • pvedaemon: OK/FAILED                                      ║
+║  • pveproxy: OK/FAILED                                       ║
+║  • pvestatd: OK/FAILED                                       ║
+║                                                              ║
 ║  System Resources:                                           ║
 ║  • CPU Usage: [CPU %]                                        ║
 ║  • Memory Usage: [RAM %]                                     ║
@@ -148,14 +159,16 @@ Script part 2 akan otomatis setup custom MOTD yang menampilkan informasi sistem 
 - ✅ **Monitoring resource** (CPU, RAM, Disk)
 - ✅ **Quick commands** untuk admin
 - ✅ **Disable MOTD Debian default**
+- ✅ **Service Status Monitoring** (pve-cluster, pvedaemon, pveproxy, pvestatd)
+- ✅ **Network Information** dengan IP address real-time
 
 ## 📋 TODO List
 
 ### 🔧 **Fase 1: Infrastruktur Inti**
-- [ ] **Script Instalasi**
-  - [ ] Instalasi Proxmox VE otomatis
-  - [ ] Implementasi MOTD kustom
-  - [ ] Penanganan error dan logging
+- [x] **Script Instalasi**
+  - [x] Instalasi Proxmox VE otomatis
+  - [x] Implementasi MOTD kustom
+  - [x] Penanganan error dan logging
   - [ ] Dukungan multi-distribusi (Ubuntu, CentOS)
   - [ ] Mode instalasi tanpa pengawasan
 
@@ -203,16 +216,48 @@ Script part 2 akan otomatis setup custom MOTD yang menampilkan informasi sistem 
   - [ ] Alert kedaluwarsa sertifikat
   - [ ] Notifikasi update sistem
 
+## 🔧 Troubleshooting
+
+### Network tidak berfungsi
+- Cek konfigurasi `/etc/hosts`
+- Pastikan hostname bisa di-resolve ke IP address
+
+### DNS bermasalah
+- Jangan install package `resolvconf` atau `rdnssd`
+- Proxmox VE mengelola DNS sendiri
+
+### Script Part 2 tidak berjalan otomatis
+```bash
+tail -20 /root/.bashrc
+ls -la /home/install_proxmox2.sh
+sudo /home/install_proxmox2.sh
+```
+
+### MOTD tidak muncul
+```bash
+sudo /usr/local/bin/pve-motd.sh
+crontab -l | grep pve-motd
+sudo systemctl restart update-motd
+```
+
+### Log Instalasi
+Untuk melihat log instalasi:
+```bash
+tail -20 /root/.bashrc
+ls -la /home/install_proxmox2.sh
+journalctl -u pveproxy
+journalctl -u pvedaemon
+```
+
 ## 🛡️ Script Features
 
 - ✅ System validation (Debian 12, root access)
-- ✅ GPG key verification
 - ✅ Auto-run part 2 script after reboot using .bashrc
 - ✅ Error handling and logging
 - ✅ Automatic cleanup of .bashrc entry and temporary files
 - ✅ Colored messages for easy reading
-- ✅ Self-destruct part 2 script after completion
-- ✅ **Custom MOTD** with complete Proxmox VE information
+- ✅ Custom MOTD with complete Proxmox VE information
+- ✅ Service Status Monitoring for Proxmox VE services
 
 ## 🤝 Contributing
 

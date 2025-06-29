@@ -11,81 +11,52 @@
 
 **Open Source Project** for installing and configuring Proxmox Virtual Environment (PVE) with NAT networking for Virtual Machines (VMs) and Containers.
 
-## 📋 About the Project
+## 📋 Table of Contents
 
-This project provides a complete solution for setting up Proxmox VE servers using NAT (Network Address Translation) networking to efficiently isolate and manage VMs/Containers. Ideal for development environments, testing, or production deployments requiring network isolation.
+- [Features](#-features)
+- [System Requirements](#-system-requirements)
+- [Quick Start](#-quick-start)
+- [Post-Installation](#-post-installation)
+- [Custom MOTD](#-custom-motd)
+- [TODO List](#-todo-list)
+- [Troubleshooting](#-troubleshooting)
+- [Script Features](#-script-features)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Acknowledgments](#-acknowledgments)
+- [Support](#-support)
+- [Language Support](#-language-support)
 
-### 🎯 Project Goals
+## ✨ Features
 
-- **Automated Installation**: Automated scripts for installing Proxmox VE on Debian 12
-- **NAT Networking**: Secure and isolated NAT network setup
-- **API Management**: REST API for managing iptables NAT rules
-- **Port Forwarding**: Tools for managing port forwarding and domain routing
-- **Monitoring**: Custom MOTD and monitoring tools
+- 🚀 **Automated Installation** - 2-stage script for Proxmox VE installation
+- 🔄 **Auto-Execution** - Part 2 script runs automatically after reboot via .bashrc
+- 🎨 **Custom MOTD** - Professional Message of the Day with complete system information
+- 🛡️ **Error Handling** - Good error handling and logging
+- 🧹 **Auto-Cleanup** - Automatic cleanup of temporary files and .bashrc entries
+- 🌐 **NAT Network** - NAT network setup for VMs and containers
+- 📊 **System Monitoring** - Resource and Proxmox VE status monitoring
+- 🔧 **Troubleshooting** - Complete troubleshooting guide
+- 🌐 **Network Monitoring** - Automatic network connectivity monitoring with auto-restart
+- 🔍 **Service Status** - Monitoring Proxmox VE service status (pve-cluster, pvedaemon, pveproxy, pvestatd)
 
-## 🌐 What is NAT Networking?
+## 💻 System Requirements
 
-**Network Address Translation (NAT)** is a technique that allows multiple devices in a private network to share a single public IP address. In the context of Proxmox VE:
-
-### 🔒 Benefits of NAT for VMs/Containers:
-
-- **Security Isolation**: VMs/Containers are not directly exposed to the internet
-- **IP Management**: Uses private IP ranges (192.168.x.x, 10.x.x.x)
-- **Port Forwarding**: Complete control over internet access
-- **Resource Efficiency**: Saves public IP addresses
-- **Firewall Control**: Centralized security management
-
-### 📊 Network Architecture:
-
-```
-Internet
-    │
-    ▼
-[Router/Gateway]
-    │ (Public IP)
-    ▼
-[Proxmox Host]
-    │ (NAT Gateway)
-    ▼
-[VM/Container Network]
-    ├── VM1 (192.168.1.10)
-    ├── VM2 (192.168.1.11)
-    ├── Container1 (192.168.1.20)
-    └── Container2 (192.168.1.21)
-```
-
-## 🚀 Key Features
-
-### ✅ **Automated Installer**
-- Bash scripts for installing Proxmox VE on Debian 12
-- Auto-run using cron @reboot
-- Custom MOTD with real-time system information
-- Comprehensive error handling and logging
-
-### ✅ **NAT Bridge Configuration**
-- Linux bridge setup with NAT
-- IP forwarding and masquerading
-- DHCP server for VMs/Containers
-- Automated firewall rules
-
-### ✅ **API Management**
-- REST API for managing iptables NAT rules
-- CRUD operations for port forwarding
-- Authentication and authorization
-- JSON-based configuration
-
-### ✅ **Port Forwarding Tools**
-- Web interface for port management
-- Domain-based routing
-- SSL/TLS certificate management
-- Load balancing support
+- **OS**: Debian 12 Bookworm (minimum)
+- **Architecture**: AMD64/x86_64
+- **RAM**: Minimum 4GB (recommended 8GB+)
+- **Storage**: Minimum 32GB (recommended 100GB+)
+- **Network**: Internet connection for downloading packages
+- **Access**: Root access (sudo)
 
 ## 🚀 Quick Start
 
 ### Step 1: Download and Run Part 1 Script
 
 ```bash
-COMING SOON
+wget https://raw.githubusercontent.com/iam-rizz/proxmox-nat-installer/main/install.sh
+chmod +x install.sh
+sudo ./install.sh
 ```
 
 This script will:
@@ -116,7 +87,7 @@ After reboot, part 2 script will automatically run via .bashrc and:
 If part 2 script doesn't run automatically, run manually:
 
 ```bash
-COMING SOON
+sudo ./install_proxmox2.sh
 ```
 
 ## 🏗️ Post-Installation
@@ -128,7 +99,7 @@ COMING SOON
 2. **Setup Network Bridge**
    - In web interface, create Linux Bridge `vmbr0`
    - Add first network interface to bridge
-   - Or use script: `sudo ./setup_network_bridge.sh`
+   - Or use script: `COMING SOON`
 
 3. **Upload Subscription Key (Optional)**
    - If you have a subscription, upload key in web interface
@@ -160,6 +131,12 @@ Part 2 script will automatically setup custom MOTD that displays complete Proxmo
 ║  • VMs: [VM count]                                           ║
 ║  • Containers: [container count]                             ║
 ║                                                              ║
+║  Proxmox VE Services:                                        ║
+║  • pve-cluster: OK/FAILED                                    ║
+║  • pvedaemon: OK/FAILED                                      ║
+║  • pveproxy: OK/FAILED                                       ║
+║  • pvestatd: OK/FAILED                                       ║
+║                                                              ║
 ║  System Resources:                                           ║
 ║  • CPU Usage: [CPU %]                                        ║
 ║  • Memory Usage: [RAM %]                                     ║
@@ -177,18 +154,20 @@ Part 2 script will automatically setup custom MOTD that displays complete Proxmo
 ### MOTD Features:
 - ✅ **Auto-update** every 5 minutes
 - ✅ **Real-time system information**
-- ✅ **Proxmox VE status** (version, VM, container count)
+- ✅ **Proxmox VE status** (version, VM count, container count)
 - ✅ **Resource monitoring** (CPU, RAM, Disk)
 - ✅ **Quick commands** for admin
 - ✅ **Disable default Debian MOTD**
+- ✅ **Service Status Monitoring** (pve-cluster, pvedaemon, pveproxy, pvestatd)
+- ✅ **Network Information** with real-time IP address
 
 ## 📋 TODO List
 
 ### 🔧 **Phase 1: Core Infrastructure**
-- [ ] **Installation Scripts**
-  - [ ] Automated Proxmox VE installation
-  - [ ] Custom MOTD implementation
-  - [ ] Error handling and logging
+- [x] **Installation Scripts**
+  - [x] Automated Proxmox VE installation
+  - [x] Custom MOTD implementation
+  - [x] Error handling and logging
   - [ ] Multi-distribution support (Ubuntu, CentOS)
   - [ ] Unattended installation mode
 
@@ -236,17 +215,48 @@ Part 2 script will automatically setup custom MOTD that displays complete Proxmo
   - [ ] Certificate expiration alerts
   - [ ] System update notifications
 
+## 🔧 Troubleshooting
+
+### Network not working
+- Check `/etc/hosts` configuration
+- Ensure hostname can be resolved to IP address
+
+### DNS issues
+- Don't install `resolvconf` or `rdnssd` packages
+- Proxmox VE manages DNS itself
+
+### Part 2 Script Not Running Automatically
+```bash
+tail -20 /root/.bashrc
+ls -la /home/install_proxmox2.sh
+sudo /home/install_proxmox2.sh
+```
+
+### MOTD not appearing
+```bash
+sudo /usr/local/bin/pve-motd.sh
+crontab -l | grep pve-motd
+sudo systemctl restart update-motd
+```
+
+### Installation Logs
+To view installation logs:
+```bash
+tail -20 /root/.bashrc
+ls -la /home/install_proxmox2.sh
+journalctl -u pveproxy
+journalctl -u pvedaemon
+```
 
 ## 🛡️ Script Features
 
 - ✅ System validation (Debian 12, root access)
-- ✅ GPG key verification
 - ✅ Auto-run part 2 script after reboot using .bashrc
 - ✅ Error handling and logging
 - ✅ Automatic cleanup of .bashrc entry and temporary files
 - ✅ Colored messages for easy reading
-- ✅ Self-destruct part 2 script after completion
-- ✅ **Custom MOTD** with complete Proxmox VE information
+- ✅ Custom MOTD with complete Proxmox VE information
+- ✅ Service Status Monitoring for Proxmox VE services
 
 ## 🤝 Contributing
 
@@ -264,6 +274,8 @@ We welcome contributions from the community! Please:
 - Update documentation as needed
 - Ensure all tests pass
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+
 ## 📄 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
@@ -280,26 +292,9 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 🌐 Language Support
 
-This project supports both Indonesian and English documentation:
-
-### 🇮🇩 **Indonesian**
-- **README**: [README.md](README.md)
-- **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
-
-### 🇺🇸 **English**
-- **README**: [README_EN.md](README_EN.md)
-- **Contributing**: [CONTRIBUTING_EN.md](CONTRIBUTING_EN.md)
-
-Choose the language you're most comfortable with. All contributions are welcome in both languages.
-
-## 📚 References
-
-- [Proxmox VE Installation Guide](https://pve.proxmox.com/wiki/Install_Proxmox_VE_on_Debian_12_Bookworm)
-- [Proxmox VE Documentation](https://pve.proxmox.com/pve-docs/)
-- [Proxmox VE Forum](https://forum.proxmox.com/)
-- [Linux NAT Documentation](https://www.netfilter.org/documentation/)
-- [iptables Tutorial](https://www.netfilter.org/documentation/HOWTO/NAT-HOWTO.html)
+- 🇮🇩 **Indonesian**: [README.md](README.md) | [CONTRIBUTING.md](CONTRIBUTING.md)
+- 🇺🇸 **English**: [README_EN.md](README_EN.md) | [CONTRIBUTING_EN.md](CONTRIBUTING_EN.md)
 
 ---
 
-**⭐ If this project helps you, please give it a star on the repository!** 
+**Made with ❤️ by [iam-rizz](https://github.com/iam-rizz)**

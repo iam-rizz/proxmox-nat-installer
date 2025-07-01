@@ -172,10 +172,10 @@ Script part 2 akan otomatis setup custom MOTD yang menampilkan informasi sistem 
   - [ ] Dukungan multi-distribusi (Ubuntu, CentOS)
   - [ ] Mode instalasi tanpa pengawasan
 
-- [ ] **Konfigurasi Bridge NAT**
-  - [ ] Setup bridge NAT otomatis
+- [x] **Konfigurasi Bridge NAT**
+  - [x] Setup bridge NAT otomatis
   - [ ] Konfigurasi server DHCP
-  - [ ] IP forwarding dan masquerading
+  - [x] IP forwarding dan masquerading
   - [ ] Otomatisasi aturan firewall
   - [ ] Kebijakan isolasi jaringan
 

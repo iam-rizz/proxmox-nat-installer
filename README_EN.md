@@ -171,10 +171,10 @@ Part 2 script will automatically setup custom MOTD that displays complete Proxmo
   - [ ] Multi-distribution support (Ubuntu, CentOS)
   - [ ] Unattended installation mode
 
-- [ ] **NAT Bridge Configuration**
-  - [ ] Automated NAT bridge setup
+- [x] **NAT Bridge Configuration**
+  - [x] Automated NAT bridge setup
   - [ ] DHCP server configuration
-  - [ ] IP forwarding and masquerading
+  - [x] IP forwarding and masquerading
   - [ ] Firewall rules automation
   - [ ] Network isolation policies
 

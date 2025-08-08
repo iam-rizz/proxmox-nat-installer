@@ -31,7 +31,7 @@
 ## ✨ Fitur
 
 - 🚀 **Instalasi Otomatis** - Script 2 tahap untuk instalasi Proxmox VE
-- 🔄 **Auto-Execution** - Script part 2 berjalan otomatis setelah reboot via .bashrc
+- 🔄 **Auto-Execution** - Script part 2 dengan konfirmasi user setelah reboot
 - 🎨 **Custom MOTD** - Message of the Day profesional dengan info sistem lengkap
 - 🛡️ **Error Handling** - Penanganan error dan logging yang baik
 - 🧹 **Auto-Cleanup** - Pembersihan otomatis file temporary dan .bashrc entry
@@ -78,9 +78,32 @@ Script ini akan:
 sudo systemctl reboot
 ```
 
-### Step 3: Script Part 2 Berjalan Otomatis
+### Step 3: Script Part 2 Berjalan dengan Konfirmasi
 
-Setelah reboot, script part 2 akan otomatis berjalan via .bashrc dan:
+Setelah reboot, Anda akan melihat prompt konfirmasi:
+```
+==================================================================
+  PROXMOX VE INSTALLATION - PART 2
+==================================================================
+The system has rebooted successfully with Proxmox kernel.
+Part 2 installation is ready to continue.
+
+This will:
+• Install Proxmox VE packages
+• Remove Debian kernel
+• Configure GRUB
+• Setup custom MOTD
+• Clean up installation files
+
+Estimated time: 5-10 minutes
+==================================================================
+
+Continue with Part 2 installation? [Y/n]:
+```
+
+Tekan **Y** atau **Enter** untuk melanjutkan, atau **n** untuk menunda.
+
+Script akan:
 - Install Proxmox VE packages
 - Remove Debian kernel
 - Update GRUB
@@ -90,10 +113,16 @@ Setelah reboot, script part 2 akan otomatis berjalan via .bashrc dan:
 
 ### Alternatif: Jalankan Script Part 2 Manual
 
-Jika script part 2 tidak berjalan otomatis, jalankan manual:
+Jika ingin menjalankan part 2 manual tanpa konfirmasi:
 
 ```bash
-sudo ./install_proxmox2.sh
+sudo /home/install_proxmox2.sh
+```
+
+Atau jika ingin menghapus auto-execution:
+```bash
+sudo nano /root/.bashrc
+# Hapus bagian "# Auto-run Proxmox installer"
 ```
 
 ## 🏗️ Post-Installation
@@ -252,7 +281,7 @@ cat /home/debian_version.conf
 - Jangan install package `resolvconf` atau `rdnssd`
 - Proxmox VE mengelola DNS sendiri
 
-### Script Part 2 tidak berjalan otomatis
+### Script Part 2 tidak muncul prompt konfirmasi
 ```bash
 tail -20 /root/.bashrc
 ls -la /home/install_proxmox2.sh

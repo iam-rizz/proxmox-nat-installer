@@ -30,7 +30,7 @@
 ## ✨ Features
 
 - 🚀 **Automated Installation** - 2-stage script for Proxmox VE installation
-- 🔄 **Auto-Execution** - Part 2 script runs automatically after reboot via .bashrc
+- 🔄 **Auto-Execution** - Part 2 script with user confirmation after reboot
 - 🎨 **Custom MOTD** - Professional Message of the Day with complete system information
 - 🛡️ **Error Handling** - Good error handling and logging
 - 🧹 **Auto-Cleanup** - Automatic cleanup of temporary files and .bashrc entries
@@ -77,9 +77,32 @@ This script will:
 sudo systemctl reboot
 ```
 
-### Step 3: Part 2 Script Runs Automatically
+### Step 3: Part 2 Script Runs with Confirmation
 
-After reboot, part 2 script will automatically run via .bashrc and:
+After reboot, you will see a confirmation prompt:
+```
+==================================================================
+  PROXMOX VE INSTALLATION - PART 2
+==================================================================
+The system has rebooted successfully with Proxmox kernel.
+Part 2 installation is ready to continue.
+
+This will:
+• Install Proxmox VE packages
+• Remove Debian kernel
+• Configure GRUB
+• Setup custom MOTD
+• Clean up installation files
+
+Estimated time: 5-10 minutes
+==================================================================
+
+Continue with Part 2 installation? [Y/n]:
+```
+
+Press **Y** or **Enter** to continue, or **n** to postpone.
+
+The script will:
 - Install Proxmox VE packages
 - Remove Debian kernel
 - Update GRUB
@@ -89,10 +112,16 @@ After reboot, part 2 script will automatically run via .bashrc and:
 
 ### Alternative: Run Part 2 Script Manually
 
-If part 2 script doesn't run automatically, run manually:
+If you want to run part 2 manually without confirmation:
 
 ```bash
-sudo ./install_proxmox2.sh
+sudo /home/install_proxmox2.sh
+```
+
+Or if you want to remove auto-execution:
+```bash
+sudo nano /root/.bashrc
+# Remove the "# Auto-run Proxmox installer" section
 ```
 
 ## 🏗️ Post-Installation
@@ -251,7 +280,7 @@ cat /home/debian_version.conf
 - Don't install `resolvconf` or `rdnssd` packages
 - Proxmox VE manages DNS itself
 
-### Part 2 Script Not Running Automatically
+### Part 2 Script Confirmation Not Appearing
 ```bash
 tail -20 /root/.bashrc
 ls -la /home/install_proxmox2.sh

@@ -195,7 +195,34 @@ setup_part2_script() {
 
 # Auto-run Proxmox installer (will be removed automatically)
 if [ -f /home/install_proxmox2.sh ]; then
-    bash /home/install_proxmox2.sh
+    echo
+    echo "=================================================================="
+    echo "  PROXMOX VE INSTALLATION - PART 2"
+    echo "=================================================================="
+    echo "The system has rebooted successfully with Proxmox kernel."
+    echo "Part 2 installation is ready to continue."
+    echo
+    echo "This will:"
+    echo "• Install Proxmox VE packages"
+    echo "• Remove Debian kernel"
+    echo "• Configure GRUB"
+    echo "• Setup custom MOTD"
+    echo "• Clean up installation files"
+    echo
+    echo "Estimated time: 5-10 minutes"
+    echo "=================================================================="
+    echo
+    read -p "Continue with Part 2 installation? [Y/n]: " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+        echo "Starting Proxmox VE installation part 2..."
+        bash /home/install_proxmox2.sh
+    else
+        echo "Installation paused. To continue later, run:"
+        echo "sudo bash /home/install_proxmox2.sh"
+        echo
+        echo "To remove auto-execution, edit /root/.bashrc"
+    fi
 fi
 EOF
     
@@ -209,11 +236,13 @@ display_instructions() {
     echo
     print_status "Next steps:"
     echo "1. Reboot the system: sudo systemctl reboot"
-    echo "2. After reboot, part 2 script will run automatically via .bashrc"
-    echo "3. Installation will complete automatically"
-    echo "4. Access web interface at: https://$IP_PUBLIC:8006"
+    echo "2. After reboot, you will be prompted to continue with part 2"
+    echo "3. Confirm to start the automatic installation"
+    echo "4. Installation will complete automatically"
+    echo "5. Access web interface at: https://$IP_PUBLIC:8006"
     echo
     print_warning "Important: Do not interrupt the reboot process!"
+    print_status "After reboot, you can choose when to start part 2 installation"
     echo
 }
 

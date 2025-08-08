@@ -33,10 +33,30 @@ print_error() {
 
 remove_bashrc_entry() {
     print_status "Removing .bashrc entry..."
-    sed -i '/# Auto-run Proxmox installer/d' /root/.bashrc
-    sed -i '/if \[ -f \/home\/install_proxmox2.sh \]; then/d' /root/.bashrc
-    sed -i '/    bash \/home\/install_proxmox2.sh/d' /root/.bashrc
-    sed -i '/fi/d' /root/.bashrc
+    
+    # Create a temporary file to store the cleaned .bashrc
+    temp_bashrc=$(mktemp)
+    
+    # Remove the entire auto-run block from .bashrc
+    awk '
+    /^# Auto-run Proxmox installer/ { 
+        # Start of block found, skip until we find the end
+        while ((getline line) > 0) {
+            if (line ~ /^fi$/ && prev_line ~ /^    fi$/) {
+                # Found the end of our block
+                break
+            }
+            prev_line = line
+        }
+        next
+    }
+    { print }
+    { prev_line = $0 }
+    ' /root/.bashrc > "$temp_bashrc"
+    
+    # Replace the original .bashrc with cleaned version
+    mv "$temp_bashrc" /root/.bashrc
+    
     print_success "Removed .bashrc entry"
 }
 

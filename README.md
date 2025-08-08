@@ -18,6 +18,7 @@
 - [Quick Start](#-quick-start)
 - [Post-Installation](#-post-installation)
 - [Custom MOTD](#-custom-motd)
+- [Network Bridge Setup](#-network-bridge-setup)
 - [Network Connectivity Monitoring](#-network-connectivity-monitoring)
 - [TODO List](#-todo-list)
 - [Troubleshooting](#-troubleshooting)
@@ -36,6 +37,7 @@
 - 🛡️ **Error Handling** - Penanganan error dan logging yang baik
 - 🧹 **Auto-Cleanup** - Pembersihan otomatis file temporary dan .bashrc entry
 - 🌐 **NAT Network** - Setup jaringan NAT untuk VMs dan containers
+- 🌐 **Network Bridge Script** - Script otomatis untuk setup bridge NAT dengan interface interaktif
 - 📊 **System Monitoring** - Monitoring resource dan status Proxmox VE
 - 🔧 **Troubleshooting** - Panduan troubleshooting lengkap
 - 🌐 **Network Monitoring** - Monitoring konektivitas jaringan otomatis dengan auto-restart
@@ -134,7 +136,16 @@ sudo nano /root/.bashrc
 2. **Setup Network Bridge**
    - Di web interface, buat Linux Bridge `vmbr0`
    - Tambah network interface pertama ke bridge
-   - Atau gunakan script: `COMING SOON`
+   - Atau gunakan script otomatis:
+     ```bash
+     wget https://raw.githubusercontent.com/iam-rizz/proxmox-nat-installer/main/setup_network_bridge.sh
+     chmod +x setup_network_bridge.sh
+     sudo ./setup_network_bridge.sh
+     ```
+   - Script akan memandu Anda untuk:
+     - Memilih WAN interface
+     - Konfigurasi IP bridge dan CIDR
+     - Setup NAT dan IP forwarding otomatis
 
 3. **Upload Subscription Key (Opsional)**
    - Jika punya subscription, upload key di web interface
@@ -194,6 +205,51 @@ Script part 2 akan otomatis setup custom MOTD yang menampilkan informasi sistem 
 - ✅ **Disable MOTD Debian default**
 - ✅ **Service Status Monitoring** (pve-cluster, pvedaemon, pveproxy, pvestatd)
 - ✅ **Network Information** dengan IP address real-time
+
+## 🌐 Network Bridge Setup
+
+Untuk menggunakan script setup network bridge otomatis:
+
+### Download dan Jalankan Script
+```bash
+wget https://raw.githubusercontent.com/iam-rizz/proxmox-nat-installer/main/setup_network_bridge.sh
+chmod +x setup_network_bridge.sh
+sudo ./setup_network_bridge.sh
+```
+
+### Fitur Script Network Bridge:
+- 🔍 **Auto-detect interfaces** - Deteksi otomatis interface jaringan yang tersedia
+- 🌐 **Interactive setup** - Pemilihan WAN interface secara interaktif
+- 📝 **IP validation** - Validasi format IP address dan CIDR
+- 💾 **Backup configuration** - Backup otomatis file `/etc/network/interfaces`
+- 🔄 **NAT setup** - Konfigurasi iptables NAT dan IP forwarding otomatis
+- ✅ **Service restart** - Restart networking service otomatis
+
+### Contoh Penggunaan:
+```bash
+# Script akan menampilkan interface yang tersedia:
+Detected network interfaces:
+1) eth0
+2) enp0s3
+
+# Pilih interface WAN (misal: 1 untuk eth0)
+Select WAN interface (number): 1
+
+# Masukkan IP untuk bridge (misal: 10.10.10.1)
+Enter IP for the bridge (e.g. 10.10.10.1): 192.168.100.1
+
+# Masukkan CIDR (misal: 24 untuk subnet /24)
+Enter subnet/CIDR (e.g. 24 for 255.255.255.0): 24
+
+# Konfirmasi konfigurasi
+Continue with configuration? (Y/n): Y
+```
+
+### Hasil Konfigurasi:
+- Bridge `vmbr0` akan dibuat dengan IP yang ditentukan
+- NAT rule otomatis ditambahkan ke iptables
+- IP forwarding diaktifkan
+- VM/Container bisa menggunakan gateway bridge untuk akses internet
 
 ## 📋 TODO List
 

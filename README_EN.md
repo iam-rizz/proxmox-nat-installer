@@ -18,6 +18,7 @@
 - [Quick Start](#-quick-start)
 - [Post-Installation](#-post-installation)
 - [Custom MOTD](#-custom-motd)
+- [Network Bridge Setup](#-network-bridge-setup)
 - [TODO List](#-todo-list)
 - [Troubleshooting](#-troubleshooting)
 - [Script Features](#-script-features)
@@ -35,6 +36,7 @@
 - 🛡️ **Error Handling** - Good error handling and logging
 - 🧹 **Auto-Cleanup** - Automatic cleanup of temporary files and .bashrc entries
 - 🌐 **NAT Network** - NAT network setup for VMs and containers
+- 🌐 **Network Bridge Script** - Automated script for NAT bridge setup with interactive interface
 - 📊 **System Monitoring** - Resource and Proxmox VE status monitoring
 - 🔧 **Troubleshooting** - Complete troubleshooting guide
 - 🌐 **Network Monitoring** - Automatic network connectivity monitoring with auto-restart
@@ -133,7 +135,16 @@ sudo nano /root/.bashrc
 2. **Setup Network Bridge**
    - In web interface, create Linux Bridge `vmbr0`
    - Add first network interface to bridge
-   - Or use script: `COMING SOON`
+   - Or use automated script:
+     ```bash
+     wget https://raw.githubusercontent.com/iam-rizz/proxmox-nat-installer/main/setup_network_bridge.sh
+     chmod +x setup_network_bridge.sh
+     sudo ./setup_network_bridge.sh
+     ```
+   - Script will guide you to:
+     - Select WAN interface
+     - Configure bridge IP and CIDR
+     - Setup NAT and IP forwarding automatically
 
 3. **Upload Subscription Key (Optional)**
    - If you have a subscription, upload key in web interface
@@ -189,6 +200,55 @@ Part 2 script will automatically setup custom MOTD that displays complete Proxmo
 - ✅ **Real-time system information**
 - ✅ **Proxmox VE status** (version, VM count, container count)
 - ✅ **Resource monitoring** (CPU, RAM, Disk)
+- ✅ **Quick commands** for admin
+- ✅ **Disable default Debian MOTD**
+- ✅ **Service Status Monitoring** (pve-cluster, pvedaemon, pveproxy, pvestatd)
+- ✅ **Network Information** with real-time IP address
+
+## 🌐 Network Bridge Setup
+
+To use the automated network bridge setup script:
+
+### Download and Run Script
+```bash
+wget https://raw.githubusercontent.com/iam-rizz/proxmox-nat-installer/main/setup_network_bridge.sh
+chmod +x setup_network_bridge.sh
+sudo ./setup_network_bridge.sh
+```
+
+### Network Bridge Script Features:
+- 🔍 **Auto-detect interfaces** - Automatically detect available network interfaces
+- 🌐 **Interactive setup** - Interactive WAN interface selection
+- 📝 **IP validation** - Validate IP address and CIDR format
+- 💾 **Backup configuration** - Automatic backup of `/etc/network/interfaces`
+- 🔄 **NAT setup** - Automatic iptables NAT and IP forwarding configuration
+- ✅ **Service restart** - Automatic networking service restart
+
+### Usage Example:
+```bash
+# Script will display available interfaces:
+Detected network interfaces:
+1) eth0
+2) enp0s3
+
+# Select WAN interface (e.g.: 1 for eth0)
+Select WAN interface (number): 1
+
+# Enter bridge IP (e.g.: 10.10.10.1)
+Enter IP for the bridge (e.g. 10.10.10.1): 192.168.100.1
+
+# Enter CIDR (e.g.: 24 for /24 subnet)
+Enter subnet/CIDR (e.g. 24 for 255.255.255.0): 24
+
+# Confirm configuration
+Continue with configuration? (Y/n): Y
+```
+
+### Configuration Result:
+- Bridge `vmbr0` will be created with specified IP
+- NAT rules automatically added to iptables
+- IP forwarding enabled
+- VMs/Containers can use bridge gateway for internet access
 - ✅ **Quick commands** for admin
 - ✅ **Disable default Debian MOTD**
 - ✅ **Service Status Monitoring** (pve-cluster, pvedaemon, pveproxy, pvestatd)

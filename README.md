@@ -1,8 +1,8 @@
 # Proxmox VE NAT Network Project
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Debian](https://img.shields.io/badge/Debian-12%20Bookworm-red.svg)](https://www.debian.org/)
-[![Proxmox VE](https://img.shields.io/badge/Proxmox%20VE-8.x-orange.svg)](https://www.proxmox.com/)
+[![Debian](https://img.shields.io/badge/Debian-12%20%7C%2013-red.svg)](https://www.debian.org/)
+[![Proxmox VE](https://img.shields.io/badge/Proxmox%20VE-8.x%20%7C%209.x-orange.svg)](https://www.proxmox.com/)
 [![GitHub Views](https://komarev.com/ghpvc/?username=iam-rizz&repo=proxmox-nat-installer&color=blue&style=flat-square)](https://github.com/iam-rizz/proxmox-nat-installer)
 [![GitHub Stars](https://img.shields.io/github/stars/iam-rizz/proxmox-nat-installer?style=social)](https://github.com/iam-rizz/proxmox-nat-installer)
 [![GitHub Forks](https://img.shields.io/github/forks/iam-rizz/proxmox-nat-installer?style=social)](https://github.com/iam-rizz/proxmox-nat-installer)
@@ -40,10 +40,13 @@
 - 🔧 **Troubleshooting** - Panduan troubleshooting lengkap
 - 🌐 **Network Monitoring** - Monitoring konektivitas jaringan otomatis dengan auto-restart
 - 🔍 **Service Status** - Monitoring status layanan Proxmox VE (pve-cluster, pvedaemon, pveproxy, pvestatd)
+- 🔄 **Multi-Version Support** - Support Debian 12 Bookworm dan Debian 13 Trixie
+- 📁 **Repository Format** - Otomatis menggunakan format yang sesuai (legacy/deb822)
+- 🔄 **Sources Modernization** - Otomatis modernize repository sources untuk Debian 13
 
 ## 💻 Persyaratan Sistem
 
-- **OS**: Debian 12 Bookworm (minimal)
+- **OS**: Debian 12 Bookworm atau Debian 13 Trixie (minimal)
 - **Architecture**: AMD64/x86_64
 - **RAM**: Minimal 4GB (rekomendasi 8GB+)
 - **Storage**: Minimal 32GB (rekomendasi 100GB+)
@@ -62,9 +65,11 @@ sudo ./install.sh
 
 Script ini akan:
 - Update sistem
-- Tambah repository Proxmox VE
+- Modernize repository sources ke format deb822 (untuk Debian 13)
+- Tambah repository Proxmox VE (format legacy untuk Debian 12, deb822 untuk Debian 13)
 - Download dan verify GPG key
 - Install Proxmox VE kernel
+- Konfigurasi /etc/hosts sesuai best practice Proxmox
 - Setup script part 2 untuk auto-run setelah reboot menggunakan .bashrc
 
 ### Step 2: Reboot Sistem
@@ -105,9 +110,8 @@ sudo ./install_proxmox2.sh
 3. **Upload Subscription Key (Opsional)**
    - Jika punya subscription, upload key di web interface
    - Remove no-subscription repository:
-     ```bash
-     sudo rm /etc/apt/sources.list.d/pve-install-repo.list
-     ```
+     - Untuk Debian 12: `sudo rm /etc/apt/sources.list.d/pve-install-repo.list`
+     - Untuk Debian 13: `sudo rm /etc/apt/sources.list.d/pve-install-repo.sources`
 
 ## 📊 Custom MOTD (Message of the Day)
 
@@ -218,9 +222,31 @@ Script part 2 akan otomatis setup custom MOTD yang menampilkan informasi sistem 
 
 ## 🔧 Troubleshooting
 
+### Cek Versi Debian yang Terdeteksi
+```bash
+grep PRETTY_NAME /etc/os-release
+cat /home/debian_version.conf
+```
+
 ### Network tidak berfungsi
 - Cek konfigurasi `/etc/hosts`
-- Pastikan hostname bisa di-resolve ke IP address
+- Pastikan hostname bisa di-resolve ke IP address:
+  ```bash
+  hostname --ip-address
+  ```
+
+### Repository Issues
+- Untuk Debian 12: Repository menggunakan format legacy (.list)
+- Untuk Debian 13: Repository menggunakan format deb822 (.sources)
+- Script otomatis menjalankan `apt modernize-sources` untuk Debian 13
+- Cek repository yang terinstall:
+  ```bash
+  ls -la /etc/apt/sources.list.d/pve*
+  ```
+- Manual modernize (khusus Debian 13):
+  ```bash
+  sudo apt modernize-sources
+  ```
 
 ### DNS bermasalah
 - Jangan install package `resolvconf` atau `rdnssd`
@@ -251,13 +277,17 @@ journalctl -u pvedaemon
 
 ## 🛡️ Script Features
 
-- ✅ System validation (Debian 12, root access)
+- ✅ System validation (Debian 12/13, root access)
+- ✅ Auto-detect Debian version and configure appropriate repository format
 - ✅ Auto-run part 2 script after reboot using .bashrc
+- ✅ Proper /etc/hosts configuration following Proxmox best practices
 - ✅ Error handling and logging
 - ✅ Automatic cleanup of .bashrc entry and temporary files
 - ✅ Colored messages for easy reading
 - ✅ Custom MOTD with complete Proxmox VE information
 - ✅ Service Status Monitoring for Proxmox VE services
+- ✅ **Auto-modernize sources**: Otomatis jalankan `apt modernize-sources` untuk Debian 13
+- ✅ Version-specific kernel removal (6.1.x for Debian 12, 6.12.x for Debian 13)
 
 ## 🤝 Contributing
 

@@ -1,8 +1,8 @@
 # Proxmox VE NAT Network Project
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Debian](https://img.shields.io/badge/Debian-12%20Bookworm-red.svg)](https://www.debian.org/)
-[![Proxmox VE](https://img.shields.io/badge/Proxmox%20VE-8.x-orange.svg)](https://www.proxmox.com/)
+[![Debian](https://img.shields.io/badge/Debian-12%20%7C%2013-red.svg)](https://www.debian.org/)
+[![Proxmox VE](https://img.shields.io/badge/Proxmox%20VE-8.x%20%7C%209.x-orange.svg)](https://www.proxmox.com/)
 [![GitHub Views](https://komarev.com/ghpvc/?username=iam-rizz&repo=proxmox-nat-installer&color=blue&style=flat-square)](https://github.com/iam-rizz/proxmox-nat-installer)
 [![GitHub Stars](https://img.shields.io/github/stars/iam-rizz/proxmox-nat-installer?style=social)](https://github.com/iam-rizz/proxmox-nat-installer)
 [![GitHub Forks](https://img.shields.io/github/forks/iam-rizz/proxmox-nat-installer?style=social)](https://github.com/iam-rizz/proxmox-nat-installer)
@@ -39,10 +39,13 @@
 - 🔧 **Troubleshooting** - Complete troubleshooting guide
 - 🌐 **Network Monitoring** - Automatic network connectivity monitoring with auto-restart
 - 🔍 **Service Status** - Monitoring Proxmox VE service status (pve-cluster, pvedaemon, pveproxy, pvestatd)
+- 🔄 **Multi-Version Support** - Support for Debian 12 Bookworm and Debian 13 Trixie
+- 📁 **Repository Format** - Automatically uses appropriate format (legacy/deb822)
+- 🔄 **Sources Modernization** - Automatic repository sources modernization for Debian 13
 
 ## 💻 System Requirements
 
-- **OS**: Debian 12 Bookworm (minimum)
+- **OS**: Debian 12 Bookworm or Debian 13 Trixie (minimum)
 - **Architecture**: AMD64/x86_64
 - **RAM**: Minimum 4GB (recommended 8GB+)
 - **Storage**: Minimum 32GB (recommended 100GB+)
@@ -61,9 +64,11 @@ sudo ./install.sh
 
 This script will:
 - Update system
-- Add Proxmox VE repository
+- Modernize repository sources to deb822 format (for Debian 13)
+- Add Proxmox VE repository (legacy format for Debian 12, deb822 for Debian 13)
 - Download and verify GPG key
 - Install Proxmox VE kernel
+- Configure /etc/hosts following Proxmox best practices
 - Setup part 2 script for auto-run after reboot using .bashrc
 
 ### Step 2: Reboot System
@@ -104,9 +109,8 @@ sudo ./install_proxmox2.sh
 3. **Upload Subscription Key (Optional)**
    - If you have a subscription, upload key in web interface
    - Remove no-subscription repository:
-     ```bash
-     sudo rm /etc/apt/sources.list.d/pve-install-repo.list
-     ```
+     - For Debian 12: `sudo rm /etc/apt/sources.list.d/pve-install-repo.list`
+     - For Debian 13: `sudo rm /etc/apt/sources.list.d/pve-install-repo.sources`
 
 ## 📊 Custom MOTD (Message of the Day)
 
@@ -217,9 +221,31 @@ Part 2 script will automatically setup custom MOTD that displays complete Proxmo
 
 ## 🔧 Troubleshooting
 
+### Check Detected Debian Version
+```bash
+grep PRETTY_NAME /etc/os-release
+cat /home/debian_version.conf
+```
+
 ### Network not working
 - Check `/etc/hosts` configuration
-- Ensure hostname can be resolved to IP address
+- Ensure hostname can be resolved to IP address:
+  ```bash
+  hostname --ip-address
+  ```
+
+### Repository Issues
+- For Debian 12: Repository uses legacy format (.list)
+- For Debian 13: Repository uses deb822 format (.sources)
+- Script automatically runs `apt modernize-sources` for Debian 13
+- Check installed repositories:
+  ```bash
+  ls -la /etc/apt/sources.list.d/pve*
+  ```
+- Manual modernize (Debian 13 only):
+  ```bash
+  sudo apt modernize-sources
+  ```
 
 ### DNS issues
 - Don't install `resolvconf` or `rdnssd` packages
@@ -250,13 +276,17 @@ journalctl -u pvedaemon
 
 ## 🛡️ Script Features
 
-- ✅ System validation (Debian 12, root access)
+- ✅ System validation (Debian 12/13, root access)
+- ✅ Auto-detect Debian version and configure appropriate repository format
 - ✅ Auto-run part 2 script after reboot using .bashrc
+- ✅ Proper /etc/hosts configuration following Proxmox best practices
 - ✅ Error handling and logging
 - ✅ Automatic cleanup of .bashrc entry and temporary files
 - ✅ Colored messages for easy reading
 - ✅ Custom MOTD with complete Proxmox VE information
 - ✅ Service Status Monitoring for Proxmox VE services
+- ✅ **Auto-modernize sources**: Automatically run `apt modernize-sources` for Debian 13
+- ✅ Version-specific kernel removal (6.1.x for Debian 12, 6.12.x for Debian 13)
 
 ## 🤝 Contributing
 

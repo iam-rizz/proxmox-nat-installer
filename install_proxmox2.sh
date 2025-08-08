@@ -45,11 +45,30 @@ self_destruct() {
     remove_bashrc_entry
     
     rm -f /home/install_proxmox2.sh /root/install_proxmox2.sh > /dev/null 2>&1
+    rm -f /home/debian_version.conf > /dev/null 2>&1
     print_success "Installation completed and cleaned up!"
 }
 
 install_proxmox() {
     print_status "Starting Proxmox VE installation (Part 2)..."
+    
+    # Load Debian version info
+    if [ -f /home/debian_version.conf ]; then
+        source /home/debian_version.conf
+        print_status "Detected Debian $DEBIAN_VERSION ($DEBIAN_CODENAME)"
+    else
+        # Fallback detection
+        if grep -q "Debian GNU/Linux 12" /etc/os-release; then
+            DEBIAN_VERSION="12"
+            DEBIAN_CODENAME="bookworm"
+        elif grep -q "Debian GNU/Linux 13" /etc/os-release; then
+            DEBIAN_VERSION="13"
+            DEBIAN_CODENAME="trixie"
+        else
+            print_error "Could not detect Debian version"
+            exit 1
+        fi
+    fi
     
     print_status "Updating system packages..."
     apt update
@@ -58,7 +77,13 @@ install_proxmox() {
     apt install -y proxmox-ve postfix open-iscsi chrony
     
     print_status "Removing Debian kernel..."
-    apt remove -y linux-image-amd64 'linux-image-6.1*'
+    if [ "$DEBIAN_VERSION" = "13" ]; then
+        # Debian 13 uses kernel 6.12.x
+        apt remove -y linux-image-amd64 'linux-image-6.12*'
+    else
+        # Debian 12 uses kernel 6.1.x
+        apt remove -y linux-image-amd64 'linux-image-6.1*'
+    fi
     
     print_status "Updating GRUB configuration..."
     update-grub

@@ -39,8 +39,17 @@ validate_system() {
         exit 1
     fi
     
-    if ! grep -q "Debian GNU/Linux 12" /etc/os-release; then
-        print_error "This script requires Debian 12 Bookworm"
+    # Check for supported Debian versions
+    if grep -q "Debian GNU/Linux 12" /etc/os-release; then
+        DEBIAN_VERSION="12"
+        DEBIAN_CODENAME="bookworm"
+        print_status "Detected Debian 12 Bookworm"
+    elif grep -q "Debian GNU/Linux 13" /etc/os-release; then
+        DEBIAN_VERSION="13"
+        DEBIAN_CODENAME="trixie"
+        print_status "Detected Debian 13 Trixie"
+    else
+        print_error "This script requires Debian 12 Bookworm or Debian 13 Trixie"
         print_error "Current OS: $(grep PRETTY_NAME /etc/os-release | cut -d'"' -f2)"
         exit 1
     fi
@@ -50,14 +59,50 @@ validate_system() {
         exit 1
     fi
     
-    print_success "System validation passed"
+    print_success "System validation passed - Debian $DEBIAN_VERSION ($DEBIAN_CODENAME)"
 }
 
 set_hosts() {
+    print_status "Configuring /etc/hosts file..."
+    
+    # Get IP address and hostname
     IP_ADDRESS=$(curl -s --max-time 2 ifconfig.me || echo "N/A")
     HOSTNAME=$(hostname)
-    sudo sed -i "s/^127\.0\.1\.1.*/$IP_ADDRESS\t$HOSTNAME/" /etc/hosts
-    echo "File /etc/hosts telah diperbarui:"
+    FQDN="${HOSTNAME}.$(dnsdomainname 2>/dev/null || echo 'localdomain')"
+    
+    if [ "$IP_ADDRESS" = "N/A" ]; then
+        print_warning "Could not detect public IP address, using local IP"
+        IP_ADDRESS=$(hostname -I | awk '{print $1}')
+    fi
+    
+    print_status "IP Address: $IP_ADDRESS"
+    print_status "Hostname: $HOSTNAME"
+    print_status "FQDN: $FQDN"
+    
+    # Backup original hosts file
+    cp /etc/hosts /etc/hosts.backup
+    
+    # Remove any existing entries for the hostname to avoid conflicts
+    sed -i "/\s$HOSTNAME\s/d" /etc/hosts
+    sed -i "/\s$HOSTNAME$/d" /etc/hosts
+    
+    # Remove hostname from 127.0.1.1 entry if it exists
+    sed -i "s/127\.0\.1\.1.*$HOSTNAME.*//g" /etc/hosts
+    sed -i '/^127\.0\.1\.1\s*$/d' /etc/hosts
+    
+    # Add proper entry for hostname resolution
+    echo "$IP_ADDRESS    $FQDN $HOSTNAME" >> /etc/hosts
+    
+    print_success "Updated /etc/hosts file:"
+    print_status "Added entry: $IP_ADDRESS    $FQDN $HOSTNAME"
+    
+    # Test hostname resolution
+    if hostname --ip-address >/dev/null 2>&1; then
+        RESOLVED_IP=$(hostname --ip-address)
+        print_success "Hostname resolution test passed: $RESOLVED_IP"
+    else
+        print_warning "Hostname resolution test failed, but continuing..."
+    fi
 }
 
 update_system() {
@@ -68,16 +113,61 @@ update_system() {
     print_success "System updated successfully"
 }
 
+modernize_sources() {
+    if [ "$DEBIAN_VERSION" = "13" ]; then
+        print_status "Modernizing all repository sources to deb822 format..."
+        if command -v apt >/dev/null 2>&1; then
+            if apt modernize-sources; then
+                print_success "Repository sources modernized to deb822 format"
+            else
+                print_warning "Failed to modernize sources or command not available"
+            fi
+        else
+            print_warning "apt modernize-sources command not available"
+        fi
+    else
+        print_status "Skipping modernize-sources for Debian $DEBIAN_VERSION (only available for Debian 13+)"
+    fi
+}
+
 add_proxmox_repo() {    
-    print_status "Adding Proxmox VE repository..."
+    print_status "Adding Proxmox VE repository for Debian $DEBIAN_VERSION ($DEBIAN_CODENAME)..."
     
-    echo "deb [arch=amd64] http://download.proxmox.com/debian/pve bookworm pve-no-subscription" > /etc/apt/sources.list.d/pve-install-repo.list
-    
-    wget https://enterprise.proxmox.com/debian/proxmox-release-bookworm.gpg -O /etc/apt/trusted.gpg.d/proxmox-release-bookworm.gpg 
+    if [ "$DEBIAN_VERSION" = "13" ]; then
+        # Debian 13 Trixie - use deb822 format
+        print_status "Using deb822 format for Debian 13 Trixie..."
+        
+        cat > /etc/apt/sources.list.d/pve-install-repo.sources << EOL
+Types: deb
+URIs: http://download.proxmox.com/debian/pve
+Suites: trixie
+Components: pve-no-subscription
+Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
+Architectures: amd64
+EOL
+        
+        # Download Trixie-specific keyring
+        wget https://enterprise.proxmox.com/debian/proxmox-archive-keyring-trixie.gpg -O /usr/share/keyrings/proxmox-archive-keyring.gpg
+        
+        # Modernize existing sources to deb822 format if available
+        print_status "Modernizing repository sources to deb822 format..."
+        if command -v apt >/dev/null 2>&1; then
+            apt modernize-sources 2>/dev/null || print_warning "apt modernize-sources not available or failed"
+        fi
+        
+    else
+        # Debian 12 Bookworm - use legacy format
+        print_status "Using legacy format for Debian 12 Bookworm..."
+        
+        echo "deb [arch=amd64] http://download.proxmox.com/debian/pve bookworm pve-no-subscription" > /etc/apt/sources.list.d/pve-install-repo.list
+        
+        # Download Bookworm-specific keyring
+        wget https://enterprise.proxmox.com/debian/proxmox-release-bookworm.gpg -O /etc/apt/trusted.gpg.d/proxmox-release-bookworm.gpg
+    fi
 
     apt update
     
-    print_success "Proxmox VE repository added successfully"
+    print_success "Proxmox VE repository added successfully for Debian $DEBIAN_VERSION"
 }
 
 
@@ -95,6 +185,10 @@ setup_part2_script() {
     cp install_proxmox2.sh /home/install_proxmox2.sh
     chmod +x /home/install_proxmox2.sh
     rm -f install_proxmox2.sh
+    
+    # Pass Debian version to part 2 script
+    echo "DEBIAN_VERSION=\"$DEBIAN_VERSION\"" > /home/debian_version.conf
+    echo "DEBIAN_CODENAME=\"$DEBIAN_CODENAME\"" >> /home/debian_version.conf
     
     print_status "Adding auto-execution to .bashrc..."
     cat >> /root/.bashrc << 'EOF'
@@ -129,6 +223,7 @@ main() {
     validate_system
     set_hosts
     update_system
+    modernize_sources
     add_proxmox_repo
     install_proxmox_kernel
     setup_part2_script
